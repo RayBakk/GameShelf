@@ -1,46 +1,52 @@
 import React, { useState } from 'react';
 import '../App.css';
 
-const Modal = ({ game, onClose, onStatusChange, onNameChange }) => {
-  const [newName, setNewName] = useState(game.name);
+const Modal = ({ game, onClose, onSave }) => {
+  const [name, setName] = useState(game.name);
+  const [platform, setPlatform] = useState(game.platform);
+  const [status, setStatus] = useState(game.status);
 
-  const handleStatusChange = (newStatus) => {
-    onStatusChange(game.id, newStatus);
-    onClose();
-  };
-
-  const handleNameChange = () => {
-    onNameChange(game.id, newName);
-    onClose();
+  const handleSave = () => {
+    onSave({ name, platform, status });
   };
 
   return (
     <div className="modal-overlay">
       <div className="modal">
-        <h3>Edit {game.name}</h3>
+        <h3>Edit Game</h3>
         <div className="modal-content">
           <label>
             Game Name:
             <input
               type="text"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </label>
-          <button onClick={handleNameChange}>Save Name</button>
+          <label>
+            Platform:
+            <select
+              value={platform}
+              onChange={(e) => setPlatform(e.target.value)}
+            >
+              <option value="Steam">Steam</option>
+              <option value="Epic Games">Epic Games</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+          <label>
+            Status:
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <option value="Planning To Play">Planning To Play</option>
+              <option value="Playing">Playing</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </label>
         </div>
-        <div className="status-options">
-          <h4>Change Status:</h4>
-          <button onClick={() => handleStatusChange('Planning to Play')}>
-            Planning to Play
-          </button>
-          <button onClick={() => handleStatusChange('In Progress')}>
-            In Progress
-          </button>
-          <button onClick={() => handleStatusChange('Completed')}>
-            Completed
-          </button>
-        </div>
+        <button onClick={handleSave}>Save</button>
         <button onClick={onClose}>Close</button>
       </div>
     </div>

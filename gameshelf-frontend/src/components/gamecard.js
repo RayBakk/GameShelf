@@ -1,17 +1,21 @@
 import React from 'react';
 import '../App.css';
 
-const GameCard = ({ game, onMarkAsCompleted }) => {
+const GameCard = ({ game, onClick, onDeleteGame }) => {
+  const handleDelete = (e) => {
+    e.stopPropagation();
+    onDeleteGame(game.id);
+  };
+
   return (
-    <div className="game-card">
+    <div className="game-card" onClick={onClick}>
+      <img src={game.image} alt={game.name} />
       <h3>{game.name}</h3>
       <p>Platform: {game.platform}</p>
       <p>Status: {game.status}</p>
-      {game.status !== 'Completed' && (
-        <button onClick={() => onMarkAsCompleted(game.id)}>
-          Mark as Completed
-        </button>
-      )}
+      <button className="delete-button" onClick={handleDelete}>
+        Delete
+      </button>
     </div>
   );
 };
