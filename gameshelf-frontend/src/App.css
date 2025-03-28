@@ -112,6 +112,14 @@ header h1 {
   color: #666;
 }
 
+#gamename {
+  color: #3498db;
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 4px;
+  margin-bottom: 5px;
+}
+
 button {
   background-color: #3498db;
   color: white;

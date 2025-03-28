@@ -17,14 +17,10 @@ const Modal = ({ game, onClose, onSave }) => {
         <div className="modal-content">
           <label>
             Game Name:
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+              <p id="gamename">{game.name}</p>
           </label>
           <label>
-            Platform:
+            Platform: 
             <select
               value={platform}
               onChange={(e) => setPlatform(e.target.value)}
@@ -34,8 +30,9 @@ const Modal = ({ game, onClose, onSave }) => {
               <option value="Other">Other</option>
             </select>
           </label>
+          <br/>
           <label>
-            Status:
+            Status: 
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
