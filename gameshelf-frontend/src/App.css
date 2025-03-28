@@ -336,11 +336,6 @@ button:hover {
   font-weight: bold;
 }
 
-.status {
-  color: #2ecc71;
-  font-weight: bold;
-}
-
 ul {
   list-style: none;
   padding: 0;
@@ -348,4 +343,40 @@ ul {
 
 ul li {
   margin: 10px 0;
+}
+
+.custom-dropdown {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 10px;
+  transition: background-color 0.3s;
+}
+
+.custom-dropdown:hover {
+  background-color: #2779bd;
+}
+
+.stars {
+  display: flex;
+  font-size: 1.5rem;
+  color: #ccc;
+}
+
+.star {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.star.filled {
+  color: gold;
+}
+
+.star:hover,
+.star.filled:hover {
+  color: gold;
 }
