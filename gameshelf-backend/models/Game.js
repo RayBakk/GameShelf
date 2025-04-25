@@ -1,10 +1,15 @@
 const mongoose = require('mongoose');
 
 const gameSchema = new mongoose.Schema({
-  name: String,
+  title: String,
   platform: String,
-  status: { type: String, default: 'Planning to Play' },
-  image: String
+  completed: Boolean,
+
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  }
 });
 
 module.exports = mongoose.model('Game', gameSchema);
