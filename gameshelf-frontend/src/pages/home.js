@@ -43,6 +43,8 @@ const Home = ({ games, setGames }) => {
       return;
     }
 
+    
+
     setIsLoading(true);
 
     const imageUrl = await fetchGameImage(newGameName);
@@ -84,10 +86,28 @@ const Home = ({ games, setGames }) => {
   };
 
   const [searchTerm, setSearchTerm] = useState('');
-  
-  const filteredGames = games.filter((game) =>
-    game.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
+  const [sortBy, setSortBy] = useState('');
+
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value);
+  };
+
+  const filteredAndSortedGames = games
+  .filter((game) => {
+    return game.name.toLowerCase().includes(searchTerm.toLowerCase());
+  })
+  .filter((game) => {
+    if (sortBy === "") return true;
+    return game.status === sortBy;
+  });
+
+  const updateGameRating = (id, rating) => {
+    const updatedGames = games.map((game) =>
+      game.id === id ? { ...game, rating } : game
+    );
+    setGames(updatedGames);
+  };
   
   return (
     <div className="home">
@@ -135,13 +155,21 @@ const Home = ({ games, setGames }) => {
         </div>
       )}
 
+      <select className='custom-dropdown' onChange={handleSortChange} value={sortBy}>
+        <option value="">Sort by Status</option>
+        <option value="Planning To Play">Planning To Play</option>
+        <option value="Playing">Playing</option>
+        <option value="Completed">Completed</option>
+      </select>
+
       <div className="game-grid">
-        {filteredGames.map((game) => (
+        {filteredAndSortedGames.map((game) => (
           <GameCard
             key={game.id}
             game={game}
             onClick={() => handleGameClick(game)}
             onDeleteGame={deleteGame}
+            onRateGame={updateGameRating}
           />
         ))}
       </div>

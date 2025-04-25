@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import '../App.css';
 
 const Modal = ({ game, onClose, onSave }) => {
-  const [name, setName] = useState(game.name);
   const [platform, setPlatform] = useState(game.platform);
   const [status, setStatus] = useState(game.status);
 
   const handleSave = () => {
-    onSave({ name, platform, status });
+    onSave({ platform, status });
   };
 
   return (

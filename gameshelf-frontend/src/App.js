@@ -5,14 +5,12 @@ import Dashboard from './pages/dashboard';
 import './App.css';
 
 function App() {
-  // Load games from localStorage on initial load
   const [games, setGames] = useState(() => {
     const savedGames = localStorage.getItem('games');
     console.log('Loaded games from localStorage:', savedGames);
     return savedGames ? JSON.parse(savedGames) : [];
   });
 
-  // Save games to localStorage whenever the games state changes
   useEffect(() => {
     console.log('Saving games to localStorage:', games);
     localStorage.setItem('games', JSON.stringify(games));
@@ -25,7 +23,7 @@ function App() {
         <div className="sidebar">
           <h2>Gameshelf</h2>
           <ul>
-            {/* Always show Home and Dashboard links */}
+            {/* Home and Dashboard links */}
             <li>
               <Link to="/">Home</Link>
             </li>
