@@ -21,6 +21,8 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../gameshelf-frontend/build/index.html'));
 });
 
+require('dotenv').config();
+
 mongoose.connect(process.env.MONGO_URI, {})
   .then(() => {
     console.log('Connected to MongoDB');
