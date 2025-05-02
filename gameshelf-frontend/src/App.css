@@ -380,3 +380,9 @@ ul li {
 .star.filled:hover {
   color: gold;
 }
+
+.logo {
+  margin-bottom: -20px;
+  width: 120px;
+  cursor: pointer;
+}

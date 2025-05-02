@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/home';
 import Dashboard from './pages/dashboard';
 import './App.css';
+import logo from '../src/images/logo.png'
 
 function App() {
   return (
@@ -10,7 +11,9 @@ function App() {
       <div className="container">
         {/* Sidebar */}
         <div className="sidebar">
-          <h2>Gameshelf</h2>
+        <Link to="/">
+          <img src={logo} alt="Logo" className="logo" />
+        </Link>
           <ul>
             <li>
               <Link to="/">Home</Link>
