@@ -1,124 +1,104 @@
 import React, { useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import GameCard from '../components/gamecard';
 import Modal from '../components/modal';
 import '../App.css';
 
-const Home = ({ games, setGames }) => {
+const Home = () => {
+  const [games, setGames] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedGame, setSelectedGame] = useState(null);
-  const [newGameName, setNewGameName] = useState('');
+  const [newGameTitle, setNewGameTitle] = useState('');
   const [newGamePlatform, setNewGamePlatform] = useState('Steam');
-  const [newGameStatus, setNewGameStatus] = useState('Planning To Play');
+  const [newGameCompleted, setNewGameCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('');
 
   useEffect(() => {
-    const savedGames = JSON.parse(localStorage.getItem('games')) || [];
-    setGames(savedGames);
-  }, [setGames]);
+    const fetchGames = async () => {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/games', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      setGames(data);
+    };
 
-  useEffect(() => {
-    localStorage.setItem('games', JSON.stringify(games));
-  }, [games]);
-
-  const fetchGameImage = async (gameName) => {
-    try {
-      const response = await fetch(
-        `https://api.rawg.io/api/games?key=65ce24ced5b0462ea020544463fc5a9a&search=${gameName}`
-      );
-      const data = await response.json();
-      if (data.results && data.results.length > 0) {
-        return data.results[0].background_image;
-      }
-    } catch (error) {
-      console.error('Error fetching game image:', error);
-      return '/gameshelf-frontend/src/images/placeholder.jpg';
-    }
-  };
+    fetchGames();
+  }, []);
 
   const addGame = async () => {
-    if (!newGameName.trim()) {
+    if (!newGameTitle.trim()) {
       alert('Please enter a game name.');
       return;
     }
 
-    
-
     setIsLoading(true);
+    const token = localStorage.getItem('token');
 
-    const imageUrl = await fetchGameImage(newGameName);
+    const res = await fetch('/api/games', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        title: newGameTitle,
+        platform: newGamePlatform,
+        completed: newGameCompleted
+      })
+    });
 
-    const newGame = {
-      id: uuidv4(),
-      name: newGameName,
-      platform: newGamePlatform,
-      status: newGameStatus,
-      image: imageUrl,
-    };
-
+    const newGame = await res.json();
     setGames([...games, newGame]);
-    setNewGameName('');
+
+    setNewGameTitle('');
     setNewGamePlatform('Steam');
-    setNewGameStatus('Planning To Play');
+    setNewGameCompleted(false);
     setIsLoading(false);
     setShowForm(false);
   };
 
-  const editGame = (id, updatedGame) => {
+  const deleteGame = (id) => {
+    const updatedGames = games.filter((game) => game._id !== id);
+    setGames(updatedGames);
+  };
+
+  const editGame = (id, updatedFields) => {
     const updatedGames = games.map((game) =>
-      game.id === id ? { ...game, ...updatedGame } : game
+      game._id === id ? { ...game, ...updatedFields } : game
     );
     setGames(updatedGames);
   };
-
-  const deleteGame = (id) => {
-    const updatedGames = games.filter((game) => game.id !== id);
-    setGames(updatedGames);
-  };
-
-  const handleGameClick = (game) => {
-    setSelectedGame(game);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedGame(null);
-  };
-
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const [sortBy, setSortBy] = useState('');
-
-  const handleSortChange = (e) => {
-    setSortBy(e.target.value);
-  };
-
-  const filteredAndSortedGames = games
-  .filter((game) => {
-    return game.name.toLowerCase().includes(searchTerm.toLowerCase());
-  })
-  .filter((game) => {
-    if (sortBy === "") return true;
-    return game.status === sortBy;
-  });
 
   const updateGameRating = (id, rating) => {
     const updatedGames = games.map((game) =>
-      game.id === id ? { ...game, rating } : game
+      game._id === id ? { ...game, rating } : game
     );
     setGames(updatedGames);
   };
-  
+
+  const filteredAndSortedGames = games
+    .filter((game) => game.title.toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter((game) => {
+      if (sortBy === '') return true;
+      return sortBy === 'Completed' ? game.completed : !game.completed;
+    });
+
   return (
     <div className="home">
       <h1 className="list-title">Game List</h1>
+
       <input
-      className="searchbar"
-      type="text"
-      placeholder="Search games..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
+        className="searchbar"
+        type="text"
+        placeholder="Search games..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
       />
+
       <button onClick={() => setShowForm(true)}>Add Game</button>
 
       {showForm && (
@@ -128,8 +108,8 @@ const Home = ({ games, setGames }) => {
             <input
               type="text"
               placeholder="Game Name"
-              value={newGameName}
-              onChange={(e) => setNewGameName(e.target.value)}
+              value={newGameTitle}
+              onChange={(e) => setNewGameTitle(e.target.value)}
             />
             <select
               value={newGamePlatform}
@@ -140,12 +120,11 @@ const Home = ({ games, setGames }) => {
               <option value="Other">Other</option>
             </select>
             <select
-              value={newGameStatus}
-              onChange={(e) => setNewGameStatus(e.target.value)}
+              value={newGameCompleted}
+              onChange={(e) => setNewGameCompleted(e.target.value === 'true')}
             >
-              <option value="Planning To Play">Planning To Play</option>
-              <option value="Playing">Playing</option>
-              <option value="Completed">Completed</option>
+              <option value={false}>Not Completed</option>
+              <option value={true}>Completed</option>
             </select>
             <button onClick={addGame} disabled={isLoading}>
               {isLoading ? 'Adding...' : 'Add Game'}
@@ -155,9 +134,8 @@ const Home = ({ games, setGames }) => {
         </div>
       )}
 
-      <select className='custom-dropdown' onChange={handleSortChange} value={sortBy}>
+      <select className="custom-dropdown" onChange={(e) => setSortBy(e.target.value)} value={sortBy}>
         <option value="">Sort by Status</option>
-        <option value="Planning To Play">Planning To Play</option>
         <option value="Playing">Playing</option>
         <option value="Completed">Completed</option>
       </select>
@@ -165,10 +143,10 @@ const Home = ({ games, setGames }) => {
       <div className="game-grid">
         {filteredAndSortedGames.map((game) => (
           <GameCard
-            key={game.id}
+            key={game._id}
             game={game}
-            onClick={() => handleGameClick(game)}
-            onDeleteGame={deleteGame}
+            onClick={() => setSelectedGame(game)}
+            onDeleteGame={() => deleteGame(game._id)}
             onRateGame={updateGameRating}
           />
         ))}
@@ -177,10 +155,10 @@ const Home = ({ games, setGames }) => {
       {selectedGame && (
         <Modal
           game={selectedGame}
-          onClose={handleCloseModal}
+          onClose={() => setSelectedGame(null)}
           onSave={(updatedGame) => {
-            editGame(selectedGame.id, updatedGame);
-            handleCloseModal();
+            editGame(selectedGame._id, updatedGame);
+            setSelectedGame(null);
           }}
         />
       )}

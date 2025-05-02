@@ -1,21 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/home';
 import Dashboard from './pages/dashboard';
 import './App.css';
 
 function App() {
-  const [games, setGames] = useState(() => {
-    const savedGames = localStorage.getItem('games');
-    console.log('Loaded games from localStorage:', savedGames);
-    return savedGames ? JSON.parse(savedGames) : [];
-  });
-
-  useEffect(() => {
-    console.log('Saving games to localStorage:', games);
-    localStorage.setItem('games', JSON.stringify(games));
-  }, [games]);
-
   return (
     <Router>
       <div className="container">
@@ -23,7 +12,6 @@ function App() {
         <div className="sidebar">
           <h2>Gameshelf</h2>
           <ul>
-            {/* Home and Dashboard links */}
             <li>
               <Link to="/">Home</Link>
             </li>
@@ -36,14 +24,8 @@ function App() {
         {/* Main Content */}
         <div className="main-content">
           <Routes>
-            <Route
-              path="/"
-              element={<Home games={games} setGames={setGames} />}
-            />
-            <Route
-              path="/dashboard"
-              element={<Dashboard games={games} />}
-            />
+            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </div>
       </div>
