@@ -4,6 +4,14 @@ import Home from './pages/home';
 import Dashboard from './pages/dashboard';
 import './App.css';
 import logo from '../src/images/logo.png'
+import PrivateRoute from './components/privateroute';
+import Login from './components/login';
+
+const handleLogout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = '/login';
+};
 
 function App() {
   return (
@@ -22,14 +30,18 @@ function App() {
               <Link to="/dashboard">Dashboard</Link>
             </li>
           </ul>
+          <button onClick={handleLogout} className="logout-button">
+            Logout
+          </button>
         </div>
 
         {/* Main Content */}
         <div className="main-content">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-          </Routes>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        </Routes>
         </div>
       </div>
     </Router>

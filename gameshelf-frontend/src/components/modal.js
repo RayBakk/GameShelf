@@ -16,7 +16,7 @@ const Modal = ({ game, onClose, onSave }) => {
         <div className="modal-content">
           <label>
             Game Name:
-              <p id="gamename">{game.name}</p>
+              <p id="gamename">{game.title}</p>
           </label>
           <label>
             Platform: 

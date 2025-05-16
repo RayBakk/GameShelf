@@ -3,19 +3,33 @@ import '../App.css';
 
 const Dashboard = () => {
   const [games, setGames] = useState([]);
+  const user = JSON.parse(localStorage.getItem('user')); // Get user data
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch('/api/games', {headers: {
-      Authorization: `Bearer ${token}`
+    if (!token) {
+      window.location.href = '/login'; // Redirect if not logged in
+      return;
     }
-  })
-    .then(res => res.json())
-    .then(data => setGames(data))
-    .catch(err => console.error('Fout bij ophalen games:', err));
-}, []);
+  
+    fetch('http://localhost:5001/games', { // Use full backend URL
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch games');
+        return res.json();
+      })
+      .then(data => setGames(data))
+      .catch(err => {
+        console.error('Error fetching games:', err);
+        if (err.message.includes('401')) {
+          localStorage.removeItem('token'); // Clear invalid token
+          window.location.href = '/login';
+        }
+      });
+  }, []);
 
 const totalGames = games.length;
-const completedGames = games.filter((game) => game.completed).length;
+const completedGames = games.filter((game) => game.status === 'Completed').length;
 const completionRate = totalGames > 0 ? ((completedGames / totalGames) * 100).toFixed(2) : 0;
 
 const gamesByPlatform = games.reduce((acc, game) => {
@@ -25,10 +39,14 @@ const gamesByPlatform = games.reduce((acc, game) => {
 
 const recentGames = games.slice(-3).reverse();
 
+
+
 return (
   <div className="dashboard">
     <h1>Dashboard</h1>
+    <h1>Welcome back, {user?.username}!</h1>
 
+    
     {/* Game Statistics */}
     <div className="stats">
       <h2>Game Statistics</h2>
@@ -55,7 +73,7 @@ return (
       <ul>
         {recentGames.map((game) => (
           <li key={game._id}>
-            Added <span className="highlight">"{game.title}"</span> ({game.platform}) - <span className="status">{game.completed ? 'Completed' : 'Not completed'}</span>
+            Added <span className="highlight">"{game.title}"</span> ({game.platform}) - <span className="status">{game.status}</span>
           </li>
         ))}
       </ul>

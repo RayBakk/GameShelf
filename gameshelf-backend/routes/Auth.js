@@ -1,38 +1,50 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const bcrypt = require('bcryptjs');
 
-// REGISTER
+
+
+// Register
 router.post('/register', async (req, res) => {
-  const { username, password } = req.body;
-
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, password: hashedPassword });
-    await newUser.save();
-    res.status(201).json({ message: 'User registered successfully' });
+    const { username, email, password } = req.body;
+    const user = await User.create({ username, email, password });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    res.status(201).json({ user, token });
   } catch (err) {
-    res.status(400).json({ message: 'Registration failed', error: err });
+    res.status(400).json({ error: err.message });
   }
 });
 
-// LOGIN
+// Login
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-
   try {
-    const user = await User.findOne({ username });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    const { email, password } = req.body;
+    
+    // 1. Find user
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
+    // 2. Validate password
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token, userId: user._id });
+    // 3. Generate token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    // 4. Send response (without password)
+    const userWithoutPassword = { ...user._doc };
+    delete userWithoutPassword.password;
+    
+    res.status(200).json({ 
+      token, 
+      user: userWithoutPassword 
+    });
+
   } catch (err) {
-    res.status(500).json({ message: 'Login failed', error: err });
+    res.status(500).json({ message: err.message });
   }
 });
 
