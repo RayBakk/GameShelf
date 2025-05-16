@@ -6,12 +6,12 @@ const GameCard = ({ game, onClick, onDeleteGame, onRateGame }) => {
 
   const handleDelete = (e) => {
     e.stopPropagation();
-    onDeleteGame(game._id); // Changed from game.id to game._id
+    onDeleteGame(game._id);
   };
 
   const handleStarClick = (e, rating) => {
     e.stopPropagation();
-    onRateGame(game._id, rating); // Changed from game.id to game._id
+    onRateGame(game._id, rating); 
   };
 
   return (
@@ -22,12 +22,12 @@ const GameCard = ({ game, onClick, onDeleteGame, onRateGame }) => {
           alt={game.title} 
           className="game-image"
           onError={(e) => {
-            e.target.src = '/placeholder-game.png'; // Fallback image
+            e.target.src = '/placeholder-game.png';
           }}
         />
       )}
       <div className="game-details">
-        <h3>{game.title}</h3> {/* Changed from game.name to game.title */}
+        <h3>{game.title}</h3>
         <p>Platform: {game.platform}</p>
         <p>Status: {game.status}</p>
         <div className="star-rating">

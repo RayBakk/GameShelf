@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import GameCard from '../components/gamecard';
 import Modal from '../components/modal';
+import API from '../api';
 import '../App.css';
 
 const Home = () => {
@@ -15,151 +16,95 @@ const Home = () => {
   const [sortBy, setSortBy] = useState('');
 
   useEffect(() => {
-    const fetchGames = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:5001/games', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!response.ok) throw new Error('Failed to fetch games');
-        
-        const data = await response.json();
-        setGames(data);
-      } catch (err) {
-        console.error('Error loading games:', err);
-      }
-    };
-
-    fetchGames();
-  }, []);
-
-  const addGame = async () => {
-    if (!newGameTitle.trim()) {
-      alert('Please enter a game name.');
-      return;
-    }
-  
-    setIsLoading(true);
+  const fetchGames = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/games', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          title: newGameTitle,
-          platform: newGamePlatform,
-          status: newGameStatus
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to add game');
-      }
-
-      const newGame = await response.json();
-      setGames([...games, newGame]);
-      
-      // Reset form
-      setNewGameTitle('');
-      setNewGamePlatform('Steam');
-      setNewGameStatus('Planning to Play');
-      setShowForm(false);
+      const response = await API.get('/games');
+      setGames(response.data);
     } catch (err) {
-      alert(`Error adding game: ${err.message}`);
-      console.error('Add game error:', err);
-    } finally {
-      setIsLoading(false);
+      console.error('Error loading games:', err.response?.data);
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     }
   };
+  fetchGames();
+}, []);
 
-  const deleteGame = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this game?')) {
-      return;
-    }
-  
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/games/${id}`, {
-        method: 'DELETE',
+const addGame = async () => {
+  if (!newGameTitle.trim()) {
+    alert('Please enter a game name.');
+    return;
+  }
+
+  setIsLoading(true);
+  try {
+    const response = await API.post('/games', {
+      title: newGameTitle,
+      platform: newGamePlatform,
+      status: newGameStatus
+    });
+
+    setGames([...games, response.data]);
+    setNewGameTitle('');
+    setNewGamePlatform('Steam');
+    setNewGameStatus('Planning to Play');
+    setShowForm(false);
+  } catch (err) {
+    alert(`Error adding game: ${err.response?.data?.message || err.message}`);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+const deleteGame = async (id) => {
+  if (!window.confirm('Are you sure you want to delete this game?')) return;
+
+  try {
+    await API.delete(`/games/${id}`);
+    setGames(games.filter(game => game._id !== id));
+  } catch (err) {
+    alert(`Failed to delete game: ${err.response?.data?.message || err.message}`);
+  }
+};
+
+const updateGameRating = async (id, rating) => {
+  try {
+    const response = await API.patch(`/games/${id}/rating`, 
+      { rating }, // Payload
+      {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json', // Explicit header
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete game');
       }
-  
-      // Update state only after successful deletion
-      setGames(games.filter(game => game._id !== id));
-    } catch (err) {
-      console.error('Delete error:', err);
-      alert(`Failed to delete game: ${err.message}`);
-    }
-  };
+    );
+    setGames(games.map(game => 
+      game._id === id ? response.data : game
+    ));
+  } catch (err) {
+    console.error('Error:', err.response?.data);
+  }
+};
 
-  const updateGameRating = async (id, rating) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/games/${id}/rating`, {
-        method: 'PATCH',
+const updateGameStatus = async (id, status) => {
+  try {
+    const response = await API.patch(`/games/${id}/status`, 
+      { status },
+      {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ rating })
-      });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update rating');
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
       }
-  
-      const updatedGame = await response.json();
-      setGames(games.map(game => 
-        game._id === id ? updatedGame : game
-      ));
-    } catch (err) {
-      console.error('Rating update error:', err);
-      alert('Failed to update rating');
-    }
-  };
-
-  const updateGameStatus = async (id, status) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/games/${id}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status }) // <-- Must match backend expectation
-      });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log('Backend error:', errorData); // Add this for debugging
-        throw new Error(errorData.message || 'Failed to update status');
-      }
-  
-      const updatedGame = await response.json();
-      setGames(games.map(game => 
-        game._id === id ? updatedGame : game
-      ));
-    } catch (err) {
-      console.error('Status update error:', err);
-      alert('Failed to update status');
-    }
-  };
+    );
+    setGames(games.map(game => 
+      game._id === id ? response.data : game
+    ));
+  } catch (err) {
+    console.error('Error:', err.response?.data);
+  }
+};
 
   const filteredAndSortedGames = games
     .filter(game => game.title.toLowerCase().includes(searchTerm.toLowerCase()))
