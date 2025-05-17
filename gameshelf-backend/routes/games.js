@@ -1,20 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const Game = require('../models/game');
+const Game = require('../models/Game');
 const auth = require('../middleware/authMiddleware');
 const axios = require('axios');
 require('dotenv').config();
 
-// Get all games for authenticated user
 router.get('/', auth, async (req, res) => {
   try {
-    const games = await Game.find({ user: req.user });
+    console.log("Fetching games for user:", req.user); // Debug
+    const games = await Game.find({ user: req.user._id || req.user });
+    console.log("Found games:", games.length); // Debug
     res.json(games);
   } catch (err) {
-    res.status(500).json({ 
-      message: 'Fout bij ophalen games', 
-      error: err.message 
-    });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -34,7 +32,7 @@ router.post('/', auth, async (req, res) => {
       status,
       coverImage,
       rating: 0,
-      user: req.user
+      user: req.user._id || req.user
     });
 
     await newGame.save();

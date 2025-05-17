@@ -15,7 +15,7 @@ const gameSchema = new mongoose.Schema({
     max: 5,
     default: 0
   },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 }, { timestamps: true });
 
 module.exports = mongoose.models.Game || mongoose.model('Game', gameSchema);

@@ -204,6 +204,7 @@ button:hover {
   font-size: 16px;
   transition: background-color 0.3s;
   width: 100%;
+  margin-bottom: 10px;
 }
 
 .modal button:hover {

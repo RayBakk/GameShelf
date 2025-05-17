@@ -4,9 +4,6 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 
-
-
-// Register
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -18,32 +15,41 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Login
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    // 1. Find user
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
 
-    // 2. Validate password
+    if (!user) {
+      return res.status(404).json({ message: "Gebruiker niet gevonden" });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+    if (!isMatch) {
+      return res.status(400).json({ message: "Ongeldige inloggegevens" });
+    }
 
-    // 3. Generate token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    // Belangrijk: Zorg dat de JWT payload het user._id bevat
+    const token = jwt.sign(
+      { id: user._id }, // Dit moet het MongoDB _id veld zijn
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
 
-    // 4. Send response (without password)
-    const userWithoutPassword = { ...user._doc };
-    delete userWithoutPassword.password;
-    
+    // Geef het volledige user object terug inclusief _id
+    const userData = {
+      _id: user._id,
+      username: user.username,
+      email: user.email
+    };
+
     res.status(200).json({ 
       token, 
-      user: userWithoutPassword 
+      user: userData 
     });
 
   } catch (err) {
+    console.error('Login error:', err);
     res.status(500).json({ message: err.message });
   }
 });
