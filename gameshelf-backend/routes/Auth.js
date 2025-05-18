@@ -7,11 +7,24 @@ const bcrypt = require('bcryptjs');
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
+    
+    if (await User.findOne({ email })) {
+      return res.status(400).json({ message: 'Email already exists' });
+    }
+
     const user = await User.create({ username, email, password });
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-    res.status(201).json({ user, token });
+    
+    res.status(201).json({
+      token,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email
+      }
+    });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ message: err.message });
   }
 });
 
@@ -29,14 +42,12 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: "Ongeldige inloggegevens" });
     }
 
-    // Belangrijk: Zorg dat de JWT payload het user._id bevat
     const token = jwt.sign(
-      { id: user._id }, // Dit moet het MongoDB _id veld zijn
+      { id: user._id }, 
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
-    // Geef het volledige user object terug inclusief _id
     const userData = {
       _id: user._id,
       username: user.username,

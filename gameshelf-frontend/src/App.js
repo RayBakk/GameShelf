@@ -6,6 +6,10 @@ import './App.css';
 import logo from '../src/images/logo.png'
 import PrivateRoute from './components/privateroute';
 import Login from './components/login';
+import Register from './pages/register';
+import Community from './pages/community';
+
+
 
 const handleLogout = () => {
   localStorage.removeItem('token');
@@ -29,6 +33,12 @@ function App() {
             <li>
               <Link to="/dashboard">Dashboard</Link>
             </li>
+            <li>
+              <Link to="/community">Community</Link>
+            </li>
+            <li>
+              <Link to="/register">Register</Link>
+            </li>
           </ul>
           <button onClick={handleLogout} className="logout-button">
             Logout
@@ -41,6 +51,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/community" element={<PrivateRoute><Community /></PrivateRoute>} />
+          <Route path="/register" element={<Register />} />
         </Routes>
         </div>
       </div>

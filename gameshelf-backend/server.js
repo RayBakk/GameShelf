@@ -7,22 +7,21 @@ const User = require('./models/user');
 const Game = require('./models/game');
 const authRoutes = require('./routes/auth');
 const gameRoutes = require('./routes/games');
+const communityRoutes = require('./routes/community');
 const app = express();
 
-// Middleware
 app.use(cors({
-  origin: 'http://localhost:3000', // Your frontend URL
-  methods: ['GET', 'POST', 'PATCH', 'DELETE'], // All needed methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Required for JSON + JWT
-  credentials: true // If using cookies/sessions
+  origin: 'http://localhost:3000', 
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'], 
+  allowedHeaders: ['Content-Type', 'Authorization'], 
+  credentials: true
 }));
 app.use(express.json());
 
-// Routes
 app.use('/auth', authRoutes);
 app.use('/games', gameRoutes);
+app.use('/api/community', communityRoutes);
 
-// Updated games endpoint with status implementation
 app.get('/games', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -31,14 +30,13 @@ app.get('/games', async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id).populate('games');
     
-    // Get games with status (updated implementation)
     const games = await Game.find({ user: decoded.id });
     
     res.json(games.map(game => ({
       _id: game._id,
       title: game.title,
       platform: game.platform,
-      status: game.status, // Now using status instead of completed
+      status: game.status,
       rating: game.rating
     })));
   } catch (err) {
@@ -46,18 +44,14 @@ app.get('/games', async (req, res) => {
   }
 });
 
-// Database connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB Connected'))
   .catch(err => console.log('❌ MongoDB Error:', err));
 
-// Health check endpoint
 app.get('/checkdb', async (req, res) => {
   try {
-    // Test User collection
     const userCount = await User.countDocuments();
     
-    // Test Game collection (only if model exists)
     let gameCount;
     try {
       gameCount = await Game.countDocuments();
@@ -80,6 +74,5 @@ app.get('/checkdb', async (req, res) => {
   }
 });
 
-// Start server
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

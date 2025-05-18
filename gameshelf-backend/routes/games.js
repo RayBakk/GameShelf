@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const Game = require('../models/Game');
+const Game = require('../models/game');
 const auth = require('../middleware/authMiddleware');
 const axios = require('axios');
 require('dotenv').config();
 
 router.get('/', auth, async (req, res) => {
   try {
-    console.log("Fetching games for user:", req.user); // Debug
+    console.log("Fetching games for user:", req.user); 
     const games = await Game.find({ user: req.user._id || req.user });
-    console.log("Found games:", games.length); // Debug
+    console.log("Found games:", games.length);
     res.json(games);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -40,7 +40,7 @@ router.post('/', auth, async (req, res) => {
 
   } catch (err) {
     res.status(400).json({ 
-      message: 'Fout bij toevoegen game', 
+      message: 'Error adding game', 
       error: err.message 
     });
   }

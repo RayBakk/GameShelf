@@ -44,7 +44,7 @@ const recentGames = games.slice(-3).reverse();
 return (
   <div className="dashboard">
     <h1>Dashboard</h1>
-    <h1>Welcome back, {user?.username}!</h1>
+    <h2>{user?.username}</h2>
 
     
     {/* Game Statistics */}
