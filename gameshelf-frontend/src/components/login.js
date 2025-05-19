@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import '../App.css';
 
 const Login = () => {
@@ -37,7 +37,7 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      <h2>Login</h2>
+      <h1>Login</h1>
       {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -61,6 +61,9 @@ const Login = () => {
         <button type="submit" className="login-button">
           Login
         </button>
+        <div className="auth-footer">
+          Don't have an account? <Link to="/register">Sign up</Link>
+        </div>
       </form>
     </div>
   );
