@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link} from 'react-router-dom';
 import '../App.css';
+import logo from '../images/logo.png';
 
-const Login = () => {
+const Login = ({ setIsLoggedIn }) => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const Login = () => {
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      setIsLoggedIn(true);
       navigate('/');
     } catch (err) {
       setError(err.message);
@@ -37,6 +39,7 @@ const Login = () => {
 
   return (
     <div className="login-container">
+      <img src={logo} alt="Logo" className="logo" />
       <h1>Login</h1>
       {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit}>

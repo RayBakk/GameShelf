@@ -1,27 +1,18 @@
 const jwt = require('jsonwebtoken');
 
 function auth(req, res, next) {
-  const token = req.header('Authorization');
-  
-  if (!token) {
-    return res.status(401).json({ message: 'Geen token, toegang geweigerd' });
-  }
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  if (!token) return res.status(401).send('Access denied');
 
   try {
-    const decoded = jwt.verify(
-      token.replace("Bearer ", ""), 
-      process.env.JWT_SECRET
-    );
-
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = {
-      _id: decoded.id
+      _id: decoded.id,
+      role: decoded.role 
     };
-    
     next();
   } catch (err) {
-    console.error('[AUTH] Token verificatie fout:', err.message);
-    res.status(401).json({ message: 'Ongeldig token' });
+    res.status(400).send('Invalid token');
   }
 }
-
 module.exports = auth;

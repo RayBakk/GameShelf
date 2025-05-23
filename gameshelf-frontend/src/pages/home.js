@@ -71,10 +71,10 @@ const deleteGame = async (id) => {
 const updateGameRating = async (id, rating) => {
   try {
     const response = await API.patch(`/games/${id}/rating`, 
-      { rating }, // Payload
+      { rating }, 
       {
         headers: {
-          'Content-Type': 'application/json', // Explicit header
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       }
@@ -122,7 +122,7 @@ const updateGameStatus = async (id, status) => {
         onChange={(e) => setSearchTerm(e.target.value)}
       />
 
-      <button onClick={() => setShowForm(true)}>Add Game</button>
+      <button className='addgame-button' onClick={() => setShowForm(true)}>Add Game</button>
 
       {showForm && (
         <div className="modal-overlay">

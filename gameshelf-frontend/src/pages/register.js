@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import API from '../api';
+import logo from '../images/logo.png';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -41,6 +42,7 @@ const Register = () => {
   return (
     <div className="auth-container">
       <div className="auth-form">
+        <img src={logo} alt="Logo" className="logo" />
         <h1>Create an Account</h1>
         {errors.server && <div className="error">{errors.server}</div>}
         
@@ -78,7 +80,7 @@ const Register = () => {
             {errors.password && <span className="error">{errors.password}</span>}
           </div>
           
-          <button type="submit">Register</button>
+          <button className='register-button' type="submit">Register</button>
         </form>
         
         <div className="auth-footer">
