@@ -36,7 +36,7 @@ const AppContent = () => {
 
   return (
     <div className="container">
-      {/* Conditionally render sidebar */}
+      {/* sidebar */}
       {isLoggedIn && (
         <div className="sidebar">
           <Link to="/">
@@ -66,7 +66,6 @@ const AppContent = () => {
   );
 };
 
-// Main App component with Router
 function App() {
   return (
     <Router>

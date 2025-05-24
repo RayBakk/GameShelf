@@ -3,15 +3,15 @@ import '../App.css';
 
 const Dashboard = () => {
   const [games, setGames] = useState([]);
-  const user = JSON.parse(localStorage.getItem('user')); // Get user data
+  const user = JSON.parse(localStorage.getItem('user')); 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      window.location.href = '/login'; // Redirect if not logged in
+      window.location.href = '/login'; 
       return;
     }
   
-    fetch('http://localhost:5001/games', { // Use full backend URL
+    fetch('http://localhost:5001/games', { 
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -22,7 +22,7 @@ const Dashboard = () => {
       .catch(err => {
         console.error('Error fetching games:', err);
         if (err.message.includes('401')) {
-          localStorage.removeItem('token'); // Clear invalid token
+          localStorage.removeItem('token');
           window.location.href = '/login';
         }
       });

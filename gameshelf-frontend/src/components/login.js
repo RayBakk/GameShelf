@@ -28,7 +28,12 @@ const Login = ({ setIsLoggedIn }) => {
       }
 
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('user', JSON.stringify({
+        _id: data.user._id,
+        username: data.user.username,
+        email: data.user.email,
+        role: data.user.role
+      }));
       setIsLoggedIn(true);
       navigate('/');
     } catch (err) {

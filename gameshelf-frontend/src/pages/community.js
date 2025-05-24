@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import API from '../api';
 
-const Community = ({ onDeletePost = () => {} }) => {
+const Community = () => {
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState('');
   const [game, setGame] = useState('');
@@ -23,25 +23,35 @@ const Community = ({ onDeletePost = () => {} }) => {
   }, []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await API.post('/api/community', {
-        content,
-        game
-      });
-      setPosts([response.data, ...posts]);
-      setContent('');
-      setGame('');
-    } catch (err) {
-      console.error('Failed to create post:', err.response?.data);
-    }
-  };
+  e.preventDefault();
+  try {
+    const response = await API.post('/api/community', {
+      content,
+      game
+    });
+    
+    const userData = JSON.parse(localStorage.getItem('user'));
+    
+    const newPostWithAuthor = {
+      ...response.data,
+      author: {
+        _id: userData._id,
+        username: userData.username,
+        role: userData.role
+      }
+    };
+    
+    setPosts([newPostWithAuthor, ...posts]);
+    setContent('');
+    setGame('');
+  } catch (err) {
+    console.error('Failed to create post:', err);
+  }
+};
 
-  // Check if current user can delete the post
   const canDeletePost = (post) => {
     if (!currentUser) return false;
     
-    // Debug logs
     console.log('Current User:', currentUser);
     console.log('Post Author:', post.author);
     
@@ -52,26 +62,18 @@ const Community = ({ onDeletePost = () => {} }) => {
   };
 
   const handleDelete = async (e, post) => {
-    e.stopPropagation();
-    try {
-      const response = await API.delete(`/api/community/${post._id}`);
-      
-      if (response.data.success) {
-        setPosts(posts.filter(p => p._id !== post._id));
-        onDeletePost(post._id);
-      } else {
-        console.error('Delete failed:', response.data.message);
-        alert(response.data.message || 'Failed to delete post');
-      }
-    } catch (err) {
-      console.error('Delete error:', {
-        status: err.response?.status,
-        data: err.response?.data,
-        error: err.message
-      });
-      alert(err.response?.data?.message || 'Error deleting post');
-    }
-  };
+  e.stopPropagation();
+  try {
+
+    setPosts(posts.filter(p => p._id !== post._id));
+    
+    await API.delete(`/api/community/${post._id}`);
+    
+  } catch (err) {
+    setPosts(posts); 
+    console.error('Delete error:', err);
+  }
+};
 
   return (
     <div className="community-container">
