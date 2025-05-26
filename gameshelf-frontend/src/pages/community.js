@@ -70,7 +70,7 @@ const Community = () => {
     await API.delete(`/api/community/${post._id}`);
     
   } catch (err) {
-    setPosts(posts); 
+    setPosts(posts);
     console.error('Delete error:', err);
   }
 };

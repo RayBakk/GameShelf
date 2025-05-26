@@ -5,7 +5,7 @@ import Dashboard from './pages/dashboard';
 import './App.css';
 import logo from '../src/images/logo.png';
 import PrivateRoute from './components/privateroute';
-import Login from './components/login';
+import Login from './pages/login';
 import Register from './pages/register';
 import Community from './pages/community';
 

@@ -48,31 +48,5 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB Connected'))
   .catch(err => console.log('❌ MongoDB Error:', err));
 
-app.get('/checkdb', async (req, res) => {
-  try {
-    const userCount = await User.countDocuments();
-    
-    let gameCount;
-    try {
-      gameCount = await Game.countDocuments();
-    } catch (gameErr) {
-      gameCount = 'Game model not available';
-    }
-
-    res.json({ 
-      status: '✅ MongoDB Active', 
-      collections: {
-        users: userCount,
-        games: gameCount
-      }
-    });
-  } catch (err) {
-    res.status(500).json({ 
-      error: '❌ MongoDB Connection Failed', 
-      details: err.message 
-    });
-  }
-});
-
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

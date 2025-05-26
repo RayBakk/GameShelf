@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import GameCard from '../components/gamecard';
 import Modal from '../components/modal';
 import API from '../api';
-import '../App.css';
 
 const Home = () => {
   const [games, setGames] = useState([]);

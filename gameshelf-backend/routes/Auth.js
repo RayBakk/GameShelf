@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const Game = require('../models/game');
 const bcrypt = require('bcryptjs');
 
 router.post('/register', async (req, res) => {
@@ -15,10 +16,7 @@ router.post('/register', async (req, res) => {
     const user = await User.create({ username, email, password });
     
     const token = jwt.sign(
-      { 
-        id: user._id,
-        role: user.role 
-      }, 
+      { id: user._id, role: user.role }, 
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
@@ -29,7 +27,7 @@ router.post('/register', async (req, res) => {
         _id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role 
+        role: user.role
       }
     });
   } catch (err) {
@@ -52,10 +50,7 @@ router.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign(
-      { 
-        id: user._id,
-        role: user.role 
-      },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
@@ -69,7 +64,6 @@ router.post('/login', async (req, res) => {
         role: user.role
       }
     });
-
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: err.message });
