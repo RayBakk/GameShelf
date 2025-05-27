@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import '../App.css';
 
 const Modal = ({ game, onClose, onSave }) => {
   const [platform, setPlatform] = useState(game.platform);
@@ -36,7 +35,7 @@ const Modal = ({ game, onClose, onSave }) => {
               value={status}
               onChange={(e) => setStatus(e.target.value)}
             >
-              <option value="Planning To Play">Planning To Play</option>
+              <option value="Planning To Play">Planning to Play</option>
               <option value="Playing">Playing</option>
               <option value="Completed">Completed</option>
             </select>

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import '../App.css';
 
 const GameCard = ({ game, onClick, onDeleteGame, onRateGame }) => {
   const [hoverRating, setHoverRating] = useState(0);

@@ -30,6 +30,22 @@ const Home = () => {
   fetchGames();
 }, []);
 
+useEffect(() => {
+  const handleEsc = (e) => {
+    if (e.key === 'Escape') {
+      setShowForm(false);
+      setSelectedGame(null);
+    }
+  };
+
+  window.addEventListener('keydown', handleEsc);
+
+  return () => {
+    window.removeEventListener('keydown', handleEsc);
+  };
+}, []);
+
+
 const addGame = async () => {
   if (!newGameTitle.trim()) {
     alert('Please enter a game name.');
