@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect} from 'react';
 import GameCard from '../components/gamecard';
 import Modal from '../components/modal';
 import API from '../api';
@@ -13,113 +13,176 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const justSelectedSuggestionRef = React.useRef(false);
+
 
   useEffect(() => {
-  const fetchGames = async () => {
+    const fetchGames = async () => {
+      try {
+        const response = await API.get('/games');
+        setGames(response.data);
+      } catch (err) {
+        console.error('Error loading games:', err.response?.data);
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+        }
+      }
+    };
+    fetchGames();
+  }, []);
+
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        setShowForm(false);
+        setSelectedGame(null);
+        setShowSuggestions(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEsc);
+
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+    };
+  }, []);
+
+  const searchGames = async (query) => {
+    if (query.length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setIsSearching(true);
     try {
-      const response = await API.get('/games');
-      setGames(response.data);
+      const response = await API.get(`/games/search?query=${encodeURIComponent(query)}`);
+      setSuggestions(response.data);
+      setShowSuggestions(true);
     } catch (err) {
-      console.error('Error loading games:', err.response?.data);
-      if (err.response?.status === 401) {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-      }
+      console.error('Search error:', err);
+      setSuggestions([]);
+    } finally {
+      setIsSearching(false);
     }
   };
-  fetchGames();
-}, []);
 
-useEffect(() => {
-  const handleEsc = (e) => {
-    if (e.key === 'Escape') {
+  useEffect(() => {
+  const timer = setTimeout(() => {
+
+    if (justSelectedSuggestionRef.current) return;
+
+    if (newGameTitle && newGameTitle.length >= 3) {
+      searchGames(newGameTitle);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, 300);
+
+  return () => clearTimeout(timer);
+}, [newGameTitle]);
+
+
+
+
+  const handleGameTitleChange = (e) => {
+    setNewGameTitle(e.target.value);
+  };
+
+  const selectSuggestion = (suggestion) => {
+  justSelectedSuggestionRef.current = true;
+  setNewGameTitle(suggestion.title);
+  setShowSuggestions(false);
+  setSuggestions([]);
+
+  setTimeout(() => {
+    justSelectedSuggestionRef.current = false;
+  }, 500);
+};
+
+
+
+  const addGame = async () => {
+    if (!newGameTitle.trim()) {
+      alert('Please enter a game name.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await API.post('/games', {
+        title: newGameTitle,
+        platform: newGamePlatform,
+        status: newGameStatus
+      });
+
+      setGames([...games, response.data]);
+      setNewGameTitle('');
+      setNewGamePlatform('Steam');
+      setNewGameStatus('Planning to Play');
       setShowForm(false);
-      setSelectedGame(null);
+      setShowSuggestions(false);
+      setSuggestions([]);
+    } catch (err) {
+      alert(`Error adding game: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  window.addEventListener('keydown', handleEsc);
+  const deleteGame = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this game?')) return;
 
-  return () => {
-    window.removeEventListener('keydown', handleEsc);
+    try {
+      await API.delete(`/games/${id}`);
+      setGames(games.filter(game => game._id !== id));
+    } catch (err) {
+      alert(`Failed to delete game: ${err.response?.data?.message || err.message}`);
+    }
   };
-}, []);
 
-
-const addGame = async () => {
-  if (!newGameTitle.trim()) {
-    alert('Please enter a game name.');
-    return;
-  }
-
-  setIsLoading(true);
-  try {
-    const response = await API.post('/games', {
-      title: newGameTitle,
-      platform: newGamePlatform,
-      status: newGameStatus
-    });
-
-    setGames([...games, response.data]);
-    setNewGameTitle('');
-    setNewGamePlatform('Steam');
-    setNewGameStatus('Planning to Play');
-    setShowForm(false);
-  } catch (err) {
-    alert(`Error adding game: ${err.response?.data?.message || err.message}`);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-const deleteGame = async (id) => {
-  if (!window.confirm('Are you sure you want to delete this game?')) return;
-
-  try {
-    await API.delete(`/games/${id}`);
-    setGames(games.filter(game => game._id !== id));
-  } catch (err) {
-    alert(`Failed to delete game: ${err.response?.data?.message || err.message}`);
-  }
-};
-
-const updateGameRating = async (id, rating) => {
-  try {
-    const response = await API.patch(`/games/${id}/rating`, 
-      { rating }, 
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+  const updateGameRating = async (id, rating) => {
+    try {
+      const response = await API.patch(`/games/${id}/rating`, 
+        { rating }, 
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
         }
-      }
-    );
-    setGames(games.map(game => 
-      game._id === id ? response.data : game
-    ));
-  } catch (err) {
-    console.error('Error:', err.response?.data);
-  }
-};
+      );
+      setGames(games.map(game => 
+        game._id === id ? response.data : game
+      ));
+    } catch (err) {
+      console.error('Error:', err.response?.data);
+    }
+  };
 
-const updateGameStatus = async (id, status) => {
-  try {
-    const response = await API.patch(`/games/${id}/status`, 
-      { status },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+  const updateGameStatus = async (id, status) => {
+    try {
+      const response = await API.patch(`/games/${id}/status`, 
+        { status },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
         }
-      }
-    );
-    setGames(games.map(game => 
-      game._id === id ? response.data : game
-    ));
-  } catch (err) {
-    console.error('Error:', err.response?.data);
-  }
-};
+      );
+      setGames(games.map(game => 
+        game._id === id ? response.data : game
+      ));
+    } catch (err) {
+      console.error('Error:', err.response?.data);
+    }
+  };
 
   const filteredAndSortedGames = games
     .filter(game => game.title.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -143,13 +206,39 @@ const updateGameStatus = async (id, status) => {
         <div className="modal-overlay">
           <div className="modal">
             <h3>Add New Game</h3>
-            <input
-              type="text"
-              placeholder="Game Name"
-              value={newGameTitle}
-              onChange={(e) => setNewGameTitle(e.target.value)}
-              required
-            />
+            <div className="game-search-container">
+              <input
+                type="text"
+                placeholder="Game Name"
+                value={newGameTitle}
+                onChange={handleGameTitleChange}
+                required
+              />
+              {isSearching && <div className="search-loading">Searching...</div>}
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="suggestions-dropdown">
+                  {suggestions.map((suggestion) => (
+                    <div
+                      key={suggestion.id}
+                      className="suggestion-item"
+                      onClick={() => selectSuggestion(suggestion)}
+                    >
+                      {suggestion.image && (
+                        <img 
+                          src={suggestion.image} 
+                          alt={suggestion.title}
+                          className="suggestion-image"
+                        />
+                      )}
+                      <div className="suggestion-info">
+                        <div className="suggestion-title">{suggestion.title}</div>
+                        <div className="suggestion-platforms">{suggestion.platforms}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <select
               value={newGamePlatform}
               onChange={(e) => setNewGamePlatform(e.target.value)}
@@ -172,7 +261,12 @@ const updateGameStatus = async (id, status) => {
               <button onClick={addGame} disabled={isLoading}>
                 {isLoading ? 'Adding...' : 'Add Game'}
               </button>
-              <button onClick={() => setShowForm(false)}>Cancel</button>
+              <button onClick={() => {
+                setShowForm(false);
+                setShowSuggestions(false);
+                setSuggestions([]);
+                setNewGameTitle('');
+              }}>Cancel</button>
             </div>
           </div>
         </div>

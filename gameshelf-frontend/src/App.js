@@ -8,6 +8,7 @@ import PrivateRoute from './components/privateroute';
 import Login from './pages/login';
 import Register from './pages/register';
 import Community from './pages/community';
+import Settings from './pages/settings';
 
 const AppContent = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -46,6 +47,7 @@ const AppContent = () => {
             <li><Link to="/">Home</Link></li>
             <li><Link to="/dashboard">Dashboard</Link></li>
             <li><Link to="/community">Community</Link></li>
+            <li><Link to="/settings">Settings</Link></li>
           </ul>
           <button onClick={handleLogout} className="logout-button">
             Logout
@@ -60,6 +62,7 @@ const AppContent = () => {
           <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/community" element={<PrivateRoute><Community /></PrivateRoute>} />
+          <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
         </Routes>
       </div>
     </div>

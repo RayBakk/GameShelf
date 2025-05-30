@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const Game = require('../models/game');
+const auth = require('../middleware/authMiddleware');
 const bcrypt = require('bcryptjs');
 
 router.post('/register', async (req, res) => {
@@ -67,6 +68,19 @@ router.post('/login', async (req, res) => {
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: err.message });
+  }
+});
+
+router.delete('/users/me', auth, async (req, res) => {
+  try {
+    await Game.deleteMany({ user: req.user._id });
+
+    await User.findByIdAndDelete(req.user._id);
+
+    res.status(200).send({ message: 'Account deleted' });
+  } catch (err) {
+    console.error('Error deleting account:', err);
+    res.status(500).send({ error: 'Server error' });
   }
 });
 

@@ -16,6 +16,31 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
+router.get('/search', auth, async (req, res) => {
+  const { query } = req.query;
+  
+  if (!query || query.length < 3) {
+    return res.json([]);
+  }
+
+  try {
+    const rawgResponse = await axios.get(
+      `https://api.rawg.io/api/games?key=${process.env.RAWG_API_KEY}&search=${encodeURIComponent(query)}&page_size=5`
+    );
+
+    const suggestions = rawgResponse.data.results.map(game => ({
+      id: game.id,
+      title: game.name,
+      image: game.background_image,
+      platforms: game.platforms?.map(p => p.platform.name).join(', ') || 'Unknown'
+    }));
+    res.json(suggestions);
+  } catch (err) {
+    console.error('Search error:', err.message);
+    res.status(500).json({ error: 'Failed to search games' });
+  }
+});
+
 router.post('/', auth, async (req, res) => {
   const { title, platform, status } = req.body;
 
@@ -103,6 +128,18 @@ router.delete('/:id', auth, async (req, res) => {
   } catch (err) {
     res.status(500).json({ 
       message: 'Error deleting game',
+      error: err.message 
+    });
+  }
+});
+
+router.delete('/', auth, async (req, res) => {
+  try {
+    await Game.deleteMany({ user: req.user._id || req.user });
+    res.json({ message: 'All games deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ 
+      message: 'Error deleting games',
       error: err.message 
     });
   }

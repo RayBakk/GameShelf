@@ -5,6 +5,7 @@ const Community = () => {
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState('');
   const [game, setGame] = useState('');
+  const [replyContent, setReplyContent] = useState({}); // per post reply tekst
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
@@ -22,63 +23,89 @@ const Community = () => {
     fetchPosts();
   }, []);
 
+  // Nieuwe post aanmaken
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const response = await API.post('/api/community', {
-      content,
-      game
-    });
-    
-    const userData = JSON.parse(localStorage.getItem('user'));
-    
-    const newPostWithAuthor = {
-      ...response.data,
-      author: {
-        _id: userData._id,
-        username: userData.username,
-        role: userData.role
-      }
-    };
-    
-    setPosts([newPostWithAuthor, ...posts]);
-    setContent('');
-    setGame('');
-  } catch (err) {
-    console.error('Failed to create post:', err);
-  }
-};
+    e.preventDefault();
+    try {
+      const response = await API.post('/api/community', {
+        content,
+        game,
+      });
+
+      const userData = JSON.parse(localStorage.getItem('user'));
+
+      const newPostWithAuthor = {
+        ...response.data,
+        author: {
+          _id: userData._id,
+          username: userData.username,
+          role: userData.role,
+        },
+        replies: [], // lege replies array bij nieuwe post
+      };
+
+      setPosts([newPostWithAuthor, ...posts]);
+      setContent('');
+      setGame('');
+    } catch (err) {
+      console.error('Failed to create post:', err);
+    }
+  };
+
+  // Reply versturen
+  const handleReplySubmit = async (e, postId) => {
+    e.preventDefault();
+    const replyText = replyContent[postId]?.trim();
+    if (!replyText) return;
+
+    try {
+      // POST request naar backend om reply toe te voegen
+      const response = await API.post(`/api/community/${postId}/replies`, {
+        content: replyText,
+      });
+
+      // Reply toevoegen aan de juiste post in state
+      setPosts(posts.map(post => {
+        if (post._id === postId) {
+          return {
+            ...post,
+            replies: [...(post.replies || []), response.data],
+          };
+        }
+        return post;
+      }));
+
+      // Reply invoerveld leegmaken
+      setReplyContent(prev => ({ ...prev, [postId]: '' }));
+    } catch (err) {
+      console.error('Failed to post reply:', err);
+    }
+  };
 
   const canDeletePost = (post) => {
     if (!currentUser) return false;
-    
-    console.log('Current User:', currentUser);
-    console.log('Post Author:', post.author);
-    
+
     return (
-      currentUser.role === 'admin' || 
+      currentUser.role === 'admin' ||
       currentUser._id === post.author?._id
     );
   };
 
   const handleDelete = async (e, post) => {
-  e.stopPropagation();
-  try {
-
-    setPosts(posts.filter(p => p._id !== post._id));
-    
-    await API.delete(`/api/community/${post._id}`);
-    
-  } catch (err) {
-    setPosts(posts);
-    console.error('Delete error:', err);
-  }
-};
+    e.stopPropagation();
+    try {
+      setPosts(posts.filter(p => p._id !== post._id));
+      await API.delete(`/api/community/${post._id}`);
+    } catch (err) {
+      setPosts(posts);
+      console.error('Delete error:', err);
+    }
+  };
 
   return (
     <div className="community-container">
       <h1 className="community-title">Game Discussions</h1>
-      
+
       <form onSubmit={handleSubmit} className="community-form">
         <div className="form-group">
           <input
@@ -109,7 +136,7 @@ const Community = () => {
             <div className="post-header">
               <h3 className="post-game">{post.game}</h3>
               {canDeletePost(post) && (
-                <button 
+                <button
                   className={`delete-post-button ${currentUser?.role === 'admin' ? 'admin-delete' : ''}`}
                   onClick={(e) => handleDelete(e, post)}
                 >
@@ -122,6 +149,34 @@ const Community = () => {
               <span className="post-author">Posted by: {post.author.username}</span>
               <span className="post-date">{new Date(post.createdAt).toLocaleString()}</span>
             </div>
+
+            {/* Replies */}
+            <div className="replies-container">
+              {(post.replies || []).map(reply => (
+                <div key={reply._id} className="reply-card">
+                  <p className="reply-content">{reply.content}</p>
+                  <div className="reply-footer">
+                    <span className="reply-author">{reply.author.username}</span> |{' '}
+                    <span>{new Date(reply.createdAt).toLocaleString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Reply form */}
+            <form onSubmit={(e) => handleReplySubmit(e, post._id)} className="reply-form">
+              <input
+                type="text"
+                placeholder="Write a reply..."
+                value={replyContent[post._id] || ''}
+                onChange={(e) =>
+                  setReplyContent({ ...replyContent, [post._id]: e.target.value })
+                }
+                required
+                className="reply-input"
+              />
+              <button type="submit" className="reply-submit-btn">Reply</button>
+            </form>
           </div>
         ))}
       </div>

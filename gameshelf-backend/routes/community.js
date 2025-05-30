@@ -20,7 +20,8 @@ router.post('/', auth, async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const posts = await Post.find()
-      .populate('author', 'username _id role');
+      .populate('author', 'username _id role')
+      .populate('replies.author', 'username _id'); // populate replies author
     res.json(posts);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -46,6 +47,27 @@ router.delete('/:id', auth, async (req, res) => {
     res.json({ message: 'Post deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Error deleting post' });
+  }
+});
+
+router.post('/:postId/replies', auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    const reply = {
+      content: req.body.content,
+      author: req.user._id
+    };
+
+    post.replies.push(reply);
+    await post.save();
+
+    await post.populate('replies.author', 'username');
+
+    res.status(201).json(post);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
