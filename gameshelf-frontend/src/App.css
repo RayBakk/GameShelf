@@ -450,13 +450,6 @@ ul li {
   margin-bottom: 0.5rem;
 }
 
-.form-group input {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
 .error-message {
   color: red;
   margin-bottom: 1rem;
@@ -499,27 +492,6 @@ ul li {
   margin-bottom: 20px;
 }
 
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 8px;
-  border-radius: 4px;
-  border: none;
-}
-
-.error {
-  color: #ff4d4d;
-  font-size: 0.9em;
-}
-
 .auth-footer {
   margin-top: 20px;
   text-align: center;
@@ -553,7 +525,7 @@ ul li {
 }
 
 .form-input {
-  width: 100%;
+  width: 375px;
   padding: 12px;
   border: 1px solid #2c3e50;
   border-radius: 5px;
@@ -568,7 +540,7 @@ ul li {
 }
 
 .form-textarea {
-  width: 100%;
+  width: 710px;
   min-height: 150px;
   padding: 12px;
   border: 1px solid #2c3e50;
@@ -768,14 +740,13 @@ ul li {
   border-radius: 16px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
   color: #f0f0f0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .settings-page h1 {
   font-size: 2rem;
   margin-bottom: 1.5rem;
   text-align: center;
-  color: #ffffff;
+  color: #3498db;
 }
 
 .danger-btn {
@@ -797,45 +768,39 @@ ul li {
   background-color: #d93434;
 }
 
-/* Container holding all replies */
 .replies-container {
   margin-top: 12px;
-  padding-left: 20px; /* indent replies */
-  border-left: 3px solid #3498db; /* subtle colored border */
+  padding-left: 20px;
+  border-left: 3px solid #3498db;
 }
 
-/* Each individual reply */
 .reply-card {
-  background-color: #f9fbfd;
+  background-color: #041E3B;
   border-radius: 6px;
   padding: 10px 14px;
   margin-bottom: 10px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.07);
   font-size: 14px;
-  color: #333;
+  color: #FFFFFF;
 }
 
-/* Reply text */
 .reply-content {
   margin-bottom: 6px;
   line-height: 1.4;
 }
 
-/* Footer inside reply showing author and date */
 .reply-footer {
   font-size: 12px;
   color: #777;
   font-style: italic;
 }
 
-/* Reply form container */
 .reply-form {
   display: flex;
   align-items: center;
   margin-top: 8px;
 }
 
-/* Reply input field */
 .reply-input {
   flex-grow: 1;
   padding: 8px 12px;
@@ -851,7 +816,6 @@ ul li {
   background-color: #eef6fc;
 }
 
-/* Reply submit button */
 .reply-submit-btn {
   margin-left: 10px;
   padding: 8px 16px;
@@ -866,4 +830,19 @@ ul li {
 
 .reply-submit-btn:hover {
   background-color: #1d6db7;
+}
+
+.reply-delete-btn {
+  background-color: transparent;
+  color: #e74c3c;
+  border: none;
+  margin-left: 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 4px;
+}
+
+.reply-delete-btn:hover {
+  text-decoration: underline;
 }

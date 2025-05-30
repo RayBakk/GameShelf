@@ -37,7 +37,6 @@ const AppContent = () => {
 
   return (
     <div className="container">
-      {/* sidebar */}
       {isLoggedIn && (
         <div className="sidebar">
           <Link to="/">

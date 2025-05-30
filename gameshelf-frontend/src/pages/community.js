@@ -5,7 +5,7 @@ const Community = () => {
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState('');
   const [game, setGame] = useState('');
-  const [replyContent, setReplyContent] = useState({}); // per post reply tekst
+  const [replyContent, setReplyContent] = useState({});
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
@@ -23,7 +23,6 @@ const Community = () => {
     fetchPosts();
   }, []);
 
-  // Nieuwe post aanmaken
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -41,7 +40,7 @@ const Community = () => {
           username: userData.username,
           role: userData.role,
         },
-        replies: [], // lege replies array bij nieuwe post
+        replies: [],
       };
 
       setPosts([newPostWithAuthor, ...posts]);
@@ -52,19 +51,16 @@ const Community = () => {
     }
   };
 
-  // Reply versturen
   const handleReplySubmit = async (e, postId) => {
     e.preventDefault();
     const replyText = replyContent[postId]?.trim();
     if (!replyText) return;
 
     try {
-      // POST request naar backend om reply toe te voegen
       const response = await API.post(`/api/community/${postId}/replies`, {
         content: replyText,
       });
 
-      // Reply toevoegen aan de juiste post in state
       setPosts(posts.map(post => {
         if (post._id === postId) {
           return {
@@ -75,7 +71,6 @@ const Community = () => {
         return post;
       }));
 
-      // Reply invoerveld leegmaken
       setReplyContent(prev => ({ ...prev, [postId]: '' }));
     } catch (err) {
       console.error('Failed to post reply:', err);
@@ -101,6 +96,23 @@ const Community = () => {
       console.error('Delete error:', err);
     }
   };
+
+  const handleDeleteReply = async (postId, replyId) => {
+  try {
+    await API.delete(`/api/community/${postId}/replies/${replyId}`);
+    setPosts(posts.map(post => {
+      if (post._id === postId) {
+        return {
+          ...post,
+          replies: post.replies.filter(r => r._id !== replyId)
+        };
+      }
+      return post;
+    }));
+  } catch (err) {
+    console.error('Failed to delete reply:', err);
+  }
+};
 
   return (
     <div className="community-container">
@@ -150,20 +162,25 @@ const Community = () => {
               <span className="post-date">{new Date(post.createdAt).toLocaleString()}</span>
             </div>
 
-            {/* Replies */}
             <div className="replies-container">
               {(post.replies || []).map(reply => (
-                <div key={reply._id} className="reply-card">
-                  <p className="reply-content">{reply.content}</p>
-                  <div className="reply-footer">
-                    <span className="reply-author">{reply.author.username}</span> |{' '}
-                    <span>{new Date(reply.createdAt).toLocaleString()}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Reply form */}
+            <div key={reply._id} className="reply-card">
+              <p className="reply-content">{reply.content}</p>
+              <div className="reply-footer">
+                <span className="reply-author">{reply.author.username}</span> |{' '}
+                <span>{new Date(reply.createdAt).toLocaleString()}</span>
+                {currentUser && (currentUser.role === 'admin' || currentUser._id === reply.author._id) && (
+                  <button
+                    className="reply-delete-btn"
+                    onClick={() => handleDeleteReply(post._id, reply._id)}
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+          </div>
+          ))}
+          </div>
             <form onSubmit={(e) => handleReplySubmit(e, post._id)} className="reply-form">
               <input
                 type="text"

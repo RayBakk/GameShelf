@@ -27,7 +27,6 @@ const Settings = () => {
   return (
     <div className="settings-page">
       <h1>Settings</h1>
-
       <div className="danger-zone">
         <button onClick={deleteAllGames} className="danger-btn">
           Delete All Games

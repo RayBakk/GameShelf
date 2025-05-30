@@ -50,6 +50,30 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
+router.delete('/:postId/replies/:replyId', auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    const replyIndex = post.replies.findIndex(reply => reply._id.toString() === req.params.replyId);
+    if (replyIndex === -1) return res.status(404).json({ message: 'Reply not found' });
+
+    const isAdmin = req.user.role === 'admin';
+    const isAuthor = post.replies[replyIndex].author.equals(req.user._id);
+
+    if (!isAdmin && !isAuthor) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    post.replies.splice(replyIndex, 1);
+    await post.save();
+
+    res.json({ message: 'Reply deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.post('/:postId/replies', auth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId);
@@ -63,12 +87,15 @@ router.post('/:postId/replies', auth, async (req, res) => {
     post.replies.push(reply);
     await post.save();
 
-    await post.populate('replies.author', 'username');
+    const populatedPost = await Post.findById(post._id).populate('replies.author', 'username');
 
-    res.status(201).json(post);
+    const newReply = populatedPost.replies[populatedPost.replies.length - 1];
+
+    res.status(201).json(newReply);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 module.exports = router;

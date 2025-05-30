@@ -44,7 +44,7 @@ const Register = () => {
       <div className="auth-form">
         <img src={logo} alt="Logo" className="logo" />
         <h1>Create an Account</h1>
-        {errors.server && <div className="error">{errors.server}</div>}
+        {errors.server && <div className="error-message">{errors.server}</div>}
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -55,7 +55,7 @@ const Register = () => {
               value={formData.username}
               onChange={handleChange}
             />
-            {errors.username && <span className="error">{errors.username}</span>}
+            {errors.username && <span className="error-message">{errors.username}</span>}
           </div>
           
           <div className="form-group">
@@ -66,7 +66,7 @@ const Register = () => {
               value={formData.email}
               onChange={handleChange}
             />
-            {errors.email && <span className="error">{errors.email}</span>}
+            {errors.email && <span className="error-message">{errors.email}</span>}
           </div>
           
           <div className="form-group">
@@ -77,7 +77,7 @@ const Register = () => {
               value={formData.password}
               onChange={handleChange}
             />
-            {errors.password && <span className="error">{errors.password}</span>}
+            {errors.password && <span className="error-message">{errors.password}</span>}
           </div>
           
           <button className='register-button' type="submit">Register</button>

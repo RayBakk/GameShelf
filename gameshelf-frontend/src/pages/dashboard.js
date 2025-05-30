@@ -45,8 +45,6 @@ return (
     <h1>Dashboard</h1>
     <h2>{user?.username}</h2>
 
-    
-    {/* Game Statistics */}
     <div className="stats">
       <h2>Game Statistics</h2>
       <p>Total Games: <span className="highlight">{totalGames}</span></p>
@@ -54,7 +52,6 @@ return (
       <p>Completion Rate: <span className="highlight">{completionRate}%</span></p>
     </div>
 
-    {/* Games by Platform */}
     <div className="platforms">
       <h2>Games by Platform</h2>
       <ul>
@@ -66,7 +63,6 @@ return (
       </ul>
     </div>
 
-    {/* Recent Activity */}
     <div className="recent-activity">
       <h2>Recent Activity</h2>
       <ul>
